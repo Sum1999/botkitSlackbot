@@ -1,0 +1,6 @@
+.data
+node_modules
+components/routes/_*
+.idea/
+.env
+first-81152-51a246394bef.json
