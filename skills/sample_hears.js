@@ -312,7 +312,8 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
           }
           //Retrieve other dates if mentioned
           
-         if(params.fields.date!==undefined && params.fields.date.listValue.values[0]!==undefined)
+         if(params.fields.date!==undefined && params.fields.date.listValue!==undefined && 
+              params.fields.date.listValue.values[0]!==undefined)
           {
             //console.log(params.fields.date.listValue.values);
             console.log("in 7");
@@ -329,7 +330,7 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
                 }
                 //If 3 dates mentioned in the message i.e date1 exists,endDate=date[1] else undefined
                 if((params.fields.date1!==undefined && params.fields.date1.stringValue!=='') && 
-                    params.fields.date.listValue.values[1].stringValue!=='')
+                    (!params.fields.date.listValue && params.fields.date.listValue.values[1].stringValue!==''))
                 {
                   console.log("in 7.1.2");
                   let date11=params.fields.date.listValue.values[params.fields.date.listValue.values.length -1].stringValue;
