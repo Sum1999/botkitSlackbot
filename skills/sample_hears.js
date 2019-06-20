@@ -1,3 +1,6 @@
+/*
+Left test cases i)till the end of... ii) rest of the/this ...
+*/ 
 const request = require("request");
 var originalMsg;
 var duramt;
@@ -121,9 +124,7 @@ module.exports = function(controller,dialogflowMiddleware) {
                  console.log(substringIndex);
                  if(part1.lastIndexOf('and')===part1.length-4)
                  {
-                    //console.log(part1.lastIndexOf('and'));
                     part1=part1.slice(0,part1.lastIndexOf('and'));
-                    //console.log(part1.slice(0,part1.lastIndexOf('and')));
                  }
                  part2=message.event.text.slice(substringIndex,message.event.text.length);
                  console.log("PART1:"+part1);
@@ -181,23 +182,16 @@ function checkUserDMChannel(userid)
   }
   return false;
 }
-
 //Function to retrieve user info and dates from the message returns false if there are 
 //multiple users of the same First name as mentioned in the message
 function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefined)
 {
-  console.log("PART1:"+part1);
-  console.log("PART2:"+part2);
-  console.log("params:")
-  console.log(params.fields);
-
-  if(params.fields.message && !category)
+    if(params.fields.message && !category)
      category=params.fields.message.stringValue;
     if(params.fields.message1 && !category1)
      category1=params.fields.message1.stringValue;
-     console.log("Category:"+category+" Category1:"+category1);
+  console.log("Category:"+category+" Category1:"+category1);
     var today=new Date();
-    
     var time=today.getHours()+":"+today.getMinutes()+":"+today.getSeconds();
     if (message.event.user !== undefined) //Message is recorded into the google sheet
     {
@@ -216,182 +210,78 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
                   }
               }
           } 
-          var startDate;
-          var endDate;
-          var date;
-          var date1;
-          var ed1,ed2;//end dates if 2 message entities
-          //Get startDate and endDate from date-period object if available
-          var startDate1;
-              if(params.fields.date===undefined && params.fields.duration===undefined)
-              {
-                let year=today.getFullYear();
-                let day=String(today.getDate()).padStart(2,'0');
-                let month= String(today.getMonth() + 1).padStart(2,'0'); //January is 0!
-                startDate1=month+"-"+day+"-"+year;
-                date=startDate1+" "+time;
-                console.log("in 1");
-              }
-              if(message.event.text.includes("rest of the week") || 
-                    message.event.text.toLowerCase().includes("till the end of the week") ||
-                    message.event.text.toLowerCase().includes("till the end of this week") ||
-                    message.event.text.toLowerCase().includes("till end of week")
-                    || message.event.text.toLowerCase().includes("till end of the week"))
-              {
-                console.log("in 2");
-                var d= today.getDay();
-                let edate= new Date(today.getFullYear(),
-                                     today.getMonth(), today.getDate() + (d == 0?0:7)-d );
-                let year=edate.getFullYear();
-                let day=String(edate.getDate()).padStart(2,'0');
-                let month= String(edate.getMonth() + 1).padStart(2,'0'); //January is 0!
-              startDate1=month+"-"+day+"-"+year;
-              date1=startDate1+" "+time;
-              }
-              if(message.event.text.includes("rest of the month") || 
-                    message.event.text.toLowerCase().includes("till the end of the month") ||
-                    message.event.text.toLowerCase().includes("till the end of this month")
-                    || message.event.text.toLowerCase().includes("till end of month")
-                    || message.event.text.toLowerCase().includes("till end of this month")
-                    || message.event.text.toLowerCase().includes("till end of the month") )
-              {
-                console.log("in 3");
-                var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0,
-                                today.getHours(),today.getMinutes(),today.getSeconds());
-                  let year=lastDay.getFullYear();
-                  let day=String(lastDay.getDate()).padStart(2,'0');
-                  let month= String(lastDay.getMonth() + 1).padStart(2,'0'); //January is 0!
-                  startDate1=month+"-"+day+"-"+year;
-                  date1=startDate1+" "+time;
-              }
-                      
-            if(message.event.text.includes("rest of this") || message.event.text.includes("till end of this"))
-            {
-              console.log("in 4");
-              if(params.fields.date!==undefined && params.fields.date.listValue.values[0]!==undefined)
-              {
-                let dat1=params.fields.date.listValue.values[0].stringValue;
-                if(dat1!==undefined && !date){ //Date i.e the startDate
-                    let dt=dat1.split('T');
-                    startDate=dt[0]+' '+time;
-                }
-              }
-              else
-              {
-                console.log("in else of 4");
+          var dp=getDateFromDatePeriod(params.fields['date-period'],time);//get dates from date-period
+          var d=getDatesFromDateParameter(params.fields.date,time);//get dates from date parameter
+          var dp1,startDate1,endDate1,d1;
+          var date1;                 
+          var ed1,ed2;               
+          var tempdate;
+          var startDate=dp.startDate;
+          var endDate=dp.endDate;
+          var date=d.startDate;
+          ed1=d.endDate;
+         //Get all dates available if there are two message parameters   
+         if(params.fields.message1!==undefined && params.fields.message1.stringValue!=='')
+         {
+          dp1=getDateFromDatePeriod(params.fields['date-period1'],time);
+          d1=getDatesFromDateParameter(params.fields.date1,time);
+          startDate1=dp1.startDate;
+          endDate1=dp1.endDate;
+          date1=d1.startDate;
+          ed2=d1.endDate;
+         }
+         //get emddate for rest of the week... or till end of the week...
+         if(message.event.text.includes("rest of the week") || 
+             message.event.text.toLowerCase().includes("till the end of the week") ||
+             message.event.text.toLowerCase().includes("till the end of this week") ||
+             message.event.text.toLowerCase().includes("till end of week")
+             || message.event.text.toLowerCase().includes("till end of the week"))
+        {
+          var d= today.getDay();
+          let edate= new Date(today.getFullYear(),
+                               today.getMonth(), today.getDate() + (d == 0?0:7)-d );                                   
+          let year=edate.getFullYear();
+          let day=String(edate.getDate()).padStart(2,'0');
+          let month= String(edate.getMonth() + 1).padStart(2,'0'); //January is 0!
+          tempdate=month+"-"+day+"-"+year;
+          ed1=tempdate+" "+time;
+        }
+        //get enddate for rest of the month... or till end of the month...
+        if(message.event.text.includes("rest of the month") || 
+            message.event.text.toLowerCase().includes("till the end of the month") ||
+            message.event.text.toLowerCase().includes("till the end of this month")
+            || message.event.text.toLowerCase().includes("till end of month")
+            || message.event.text.toLowerCase().includes("till end of this month")
+            || message.event.text.toLowerCase().includes("till end of the month") )
+        {
+          var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0,
+                                  today.getHours(),today.getMinutes(),today.getSeconds());
+          let year=lastDay.getFullYear();
+          let day=String(lastDay.getDate()).padStart(2,'0');
+          let month= String(lastDay.getMonth() + 1).padStart(2,'0'); //January is 0!
+          tempdate=month+"-"+day+"-"+year;
+          ed1=tempdate+" "+time;
+        } 
+        //get startdate if it contains rest of this... or till the end of this...  
+        if(message.event.text.includes("rest of this") || message.event.text.includes("till end of this")
+            || message.event.text.includes("till the end of this"))
+        {
+           if(date)//if date available
+             startDate=date;
+           else if(date1)  // if it is in part two
+             startDate=date1;
+           else
+           {              
               let year=today.getFullYear();
               let day=String(today.getDate()).padStart(2,'0');
               let month= String(today.getMonth() + 1).padStart(2,'0'); //January is 0!
-              startDate1=month+"-"+day+"-"+year;
-              startDate=startDate1+" "+time;
-              }
-              console.log(startDate);
+              tempdate=month+"-"+day+"-"+year;
+              startDate=tempdate+" "+time;
             }
-          if(params.fields['date-period']!==undefined 
-                && params.fields['date-period'].structValue!==undefined)
-          {
-            console.log("in 5");
-            if(!startDate)
-            {
-              console.log("in 5.1");
-              startDate1=params.fields['date-period'].structValue.fields.startDate.stringValue;
-              if(startDate1!==undefined){
-                 let dt=startDate1.split('T');
-                 //console.log(dt);
-                 startDate=dt[0]+' '+time;
-              }
-            }
-             
-            let endDate1=params.fields['date-period'].structValue.fields.endDate.stringValue;
-              if(endDate1!==undefined){
-                console.log("in 6");
-                let dt=endDate1.split('T');
-                endDate=dt[0]+' '+time;
-              }
-      
-          }
-          //Retrieve other dates if mentioned
-          
-         if(params.fields.date!==undefined && params.fields.date.listValue!==undefined && 
-              params.fields.date.listValue.values[0]!==undefined)
-          {
-            //console.log(params.fields.date.listValue.values);
-            console.log("in 7");
-            //If there are 2 message entities in the same message,seperate the dates
-            if(params.fields.message1!==undefined && params.fields.message1.stringValue!=='')
-            {
-              console.log("in 7.1");
-                let dat1=params.fields.date.listValue.values[0].stringValue;
-                if(dat1!==undefined && !date){ //Date i.e the startDate
-                  console.log("in 7.1.1");
-                    let dt=dat1.split('T');
-                    date=dt[0]+' '+time;
-                    
-                }
-                //If 3 dates mentioned in the message i.e date1 exists,endDate=date[1] else undefined
-                if((params.fields.date1!==undefined && params.fields.date1.stringValue!=='') && 
-                    (!params.fields.date.listValue && params.fields.date.listValue.values[1].stringValue!==''))
-                {
-                  console.log("in 7.1.2");
-                  let date11=params.fields.date.listValue.values[params.fields.date.listValue.values.length -1].stringValue;
-                    if(date11!==undefined && !date1){
-                    let dt=date11.split('T');
-                      ed1=dt[0]+' '+time;
-                      
-                    }
-                    
-                }
-                else
-                  ed1=undefined;
-                  //if date1 exists, date1 is set to it
-                if(params.fields.date1!==undefined && params.fields.date1.stringValue!=='')
-                {
-                  console.log("in 7.1.3");
-                  let date11=params.fields.date1.stringValue;
-                    if(date11!==undefined && !date1){
-                      console.log("in 7.1.3.1");
-                      let dt=date11.split('T');
-                      date1=dt[0]+' '+time;
-                      ed2=undefined;
-                    }
-                } 
-                //else date1 is set to date[1]
-                else if(params.fields.date.listValue.values[1]!==undefined)
-                {
-                  console.log("in else of 7.1.3.1");
-                  let date11=params.fields.date.listValue.values[params.fields.date.listValue.values.length -1].stringValue;
-                    if(date11!==undefined && !date1){
-                      let dt=date11.split('T'); 
-                      date1=dt[0]+' '+time;
-                      ed2=undefined;
-                      }
-                }
-            }
-            //if ther is only 1 messaage entity then get all the dates specified 
-            else
-            {
-              console.log("in else of 7.1");
-              let dat1=params.fields.date.listValue.values[0].stringValue;
-                if(dat1!==undefined && !date){
-                  let dt=dat1.split('T');
-                  date=dt[0]+' '+time;
-                  ed1=undefined;
-                }
-                if(params.fields.date.listValue.values[1]!==undefined)
-                    {
-                      console.log("in in 8");
-                      let date11=params.fields.date.listValue.values[params.fields.date.listValue.values.length -1].stringValue;
-                        if(date11!==undefined && !date1){
-                          let dt=date11.split('T');
-                          date1=dt[0]+' '+time;
-                          ed2=undefined;
-                        }
-                    }
-            }
-
-          } 
-          //Check if entered dates are valid or not.If valid then only, insert into sheet
-        if (dateValidation(startDate,endDate,date,date1,duramt,durunit))
+              
+        }    
+        //Check if entered dates are valid or not.If valid then only, insert into sheet
+        if (dateValidation(startDate,endDate,date,ed1,duramt,durunit) || dateValidation(startDate1,endDate1,date1,ed2))
         {
           let flag1=false;   
           let flag2=false;
@@ -408,12 +298,12 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
                     if(params.fields.message1!==undefined && params.fields.message1.stringValue!=='')
                     {
                       insert_in_excel(u.real_name,part1,category,startDate,endDate,date,ed1);
-                      insert_in_excel(u.real_name,part2,category1,startDate,endDate,date1,ed2);
+                      insert_in_excel(u.real_name,part2,category1,startDate1,endDate1,date1,ed2);
                       flag1=true;
                       break;
                     }
                     //else
-                      insert_in_excel(u.real_name,message.event.text,category,startDate,endDate,date,date1);
+                      insert_in_excel(u.real_name,message.event.text,category,startDate,endDate,date,ed1);
                       flag1=true;
                       break;
                   }
@@ -435,10 +325,10 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
             if(params.fields.message1!==undefined && params.fields.message1.stringValue!=='')
             {
               insert_in_excel(u.real_name,part1,category,startDate,endDate,date,ed1);
-              insert_in_excel(u.real_name,part2,category1,startDate,endDate,date1,ed2);
+              insert_in_excel(u.real_name,part2,category1,startDate1,endDate1,date1,ed2);
             }
             else
-            insert_in_excel(realname,message.event.text,category,startDate,endDate,date,date1);
+            insert_in_excel(realname,message.event.text,category,startDate,endDate,date,ed1);
           }
           else if(flag2===true && count>1) //Error coz clash of first names
           {
@@ -458,12 +348,12 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
                           insert_in_excel(u.real_name,part1.replace(replaceid,u.real_name),category,
                                           startDate,endDate,date,ed1);
                           insert_in_excel(u.real_name,part2.replace(replaceid,u.real_name),category1,
-                                          startDate,endDate,date1,ed2);
+                                          startDate1,endDate1,date1,ed2);
                           break;
                         }
                         else
                         {
-                          insert_in_excel(u.real_name,replacedText,category,startDate,endDate,date,date1);
+                          insert_in_excel(u.real_name,replacedText,category,startDate,endDate,date,ed1);
                           break;
                         }
                       }
@@ -471,12 +361,12 @@ function retrieveUserInfoFromMessage(params,message,part1=undefined,part2=undefi
                       if(params.fields.message1!==undefined && params.fields.message1.stringValue!=='')
                         {
                           insert_in_excel(u.real_name,part1,category,startDate,endDate,date,ed1);
-                          insert_in_excel(u.real_name,part2,category1,startDate,endDate,date1,ed2);
+                          insert_in_excel(u.real_name,part2,category1,startDate1,endDate1,date1,ed2);
                           break;
                         }
                       else 
                       {  
-                        insert_in_excel(u.real_name,message.event.text,category,startDate,endDate,date,date1);
+                        insert_in_excel(u.real_name,message.event.text,category,startDate,endDate,date,ed1);
                         break;
                       }
                   }
@@ -506,9 +396,9 @@ function insert_in_excel(name, msg,category,startDate,endDate,date,date1)
   }
   if(category)
   {
-    request.post("https://script.google.com/macros/s/AKfycbyEUBNbMkUAN96ea90oWevRAxmnAuud_"+
-  "8aBN6UAQ6GpBFqockA/exec?&Name=" + name + "&Message="+msg+"&Category="+category+"&startDate="+startDate+
-  "&endDate="+endDate +"&date="+date +"&date1="+date1+"&action=insert", function (err, requ, resp)
+    request.post(process.env.googleScriptUrl+"?&Name=" + name + "&Message="+msg+"&Category="
+    +category+"&startDate="+startDate+"&endDate="+endDate +"&date="+date +
+    "&date1="+date1+"&action=insert", function (err, requ, resp)
    {
       if (err) console.log(err);
       return;
@@ -530,7 +420,6 @@ function dateValidation(startDate,endDate,date,date1,duramt,durunit)
   if(startDate && endDate) //date-period mentioned
   {
     const no=difbetweenDates(st,ed)+1;
-      console.log(no);
     if(no<0)
     {
       datavalid=false;
@@ -596,4 +485,62 @@ function difbetweenDates(st,ed)
   const utc2=Date.UTC(ed.getFullYear(),ed.getMonth(),ed.getDate());
 
   return Math.floor((utc2-utc1)/(1000*3600*24));
+}
+function getDateFromDatePeriod(dateperiod,time)
+{
+  if(dateperiod && dateperiod.structValue)
+  {
+    let startdate;
+    let enddate;
+    let startDate1=dateperiod.structValue.fields.startDate.stringValue;
+    if(startDate1){
+      let dt=startDate1.split('T');
+      startdate=dt[0]+' '+time;
+    }
+    let endDate1=dateperiod.structValue.fields.endDate.stringValue;
+    if(endDate1){
+      let dt=endDate1.split('T');
+      enddate=dt[0]+' '+time;
+    }
+   return( { "startDate" : startdate,
+             "endDate": enddate  
+            });
+  }
+  else
+      return( { "startDate" : undefined,
+                "endDate" : undefined
+              });
+}
+function getDatesFromDateParameter(dat,time)
+{
+  let startdate;
+  let enddate;
+  if(dat && dat.listValue.values[0])
+  {
+    if(dat.listValue.values[0]!==undefined )
+    {
+      let dat1=dat.listValue.values[0].stringValue;
+      if(dat1!==undefined){
+        let dt=dat1.split('T');
+        startdate=dt[0]+' '+time;
+      }
+      if(dat.listValue.values.length>1)  
+      {
+        let dat2=dat.listValue.values[dat.listValue.values.length-1].stringValue;
+        if(dat2!==undefined){
+          let dt=dat2.split('T');
+          enddate=dt[0]+' '+time;
+        }
+      }
+      return( { "startDate" : startdate,
+             "endDate": enddate  
+            });
+    }
+  }
+  else
+  {
+    return( { "startDate" : undefined,
+             "endDate": undefined  
+            });
+  }
 }
