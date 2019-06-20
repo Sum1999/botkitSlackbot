@@ -26,7 +26,6 @@ module.exports = function(controller,dialogflowMiddleware) {
             // 
             bot.reply(message,replyText);
            }
-        
     });
     //For msgs which do not specify dates in correct format
     controller.hears(['Number Date intent'],'direct_message,direct_mention,'
