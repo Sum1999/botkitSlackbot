@@ -18,9 +18,15 @@
       "clientSecret": {
           "description": "Client Secret provided by Slack"
       },
-      "studio_token": {
-          "description": "Token associated with your bot in Botkit Studio",
-          "required":false
+      "Apptoken": {
+          "description": "Token associated with your bot in Slack",
+          "required":true
+      },
+      "PORT":{
+        "description":"Port number to which the app listens"
+      },
+      "googleScriptUrl":{
+        "description":"Url of the app script of your google sheet"
       }
   }
 }
